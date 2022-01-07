@@ -18,6 +18,7 @@ import torch
 # add project directory to python path to enable relative imports
 import os
 import sys
+import zlib
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
@@ -53,27 +54,43 @@ def show_pcl(pcl):
 
 # visualize range image
 def show_range_image(frame, lidar_name):
-
-    ####### ID_S1_EX1 START #######     
+    ####### ID_S1_EX1 START #######
     #######
     print("student task ID_S1_EX1")
 
     # step 1 : extract lidar data and range image for the roof-mounted lidar
-    
+    top_lidar = [obj for obj in frame.lasers if obj.name == lidar_name][0]
+
     # step 2 : extract the range and the intensity channel from the range image
-    
+
+    if len(top_lidar.ri_return1.range_image_compressed) > 0:
+        range_image = dataset_pb2.MatrixFloat()
+        range_image.ParseFromString(zlib.decompress(top_lidar.ri_return1.range_image_compressed))
+        range_image = np.array(range_image.data).reshape(range_image.shape.dims)
+
     # step 3 : set values <0 to zero
-    
+    range_image[range_image < 0] = 0.0
+
     # step 4 : map the range channel onto an 8-bit scale and make sure that the full range of values is appropriately considered
-    
+
+    range_image_range = range_image[:, :, 0]
+    range_image_range = range_image_range * 255 / (np.amax(range_image_range) - np.amin(range_image_range))
+    image_range = range_image_range.astype(np.uint8)
+
     # step 5 : map the intensity channel onto an 8-bit scale and normalize with the difference between the 1- and 99-percentile to mitigate the influence of outliers
-    
+
+    range_image_intensity = range_image[:, :, 1]
+    range_image_intensity = np.amax(range_image_intensity) / 2 * range_image_intensity * 255 / (
+                np.amax(range_image_intensity) - np.amin(range_image_intensity))
+    image_intensity = range_image_intensity.astype(np.uint8)
+
     # step 6 : stack the range and intensity image vertically using np.vstack and convert the result to an unsigned 8-bit integer
-    
-    img_range_intensity = [] # remove after implementing all steps
+
+    img_range_intensity = np.vstack((image_range, image_intensity))
+
     #######
-    ####### ID_S1_EX1 END #######     
-    
+    ####### ID_S1_EX1 END #######
+
     return img_range_intensity
 
 
