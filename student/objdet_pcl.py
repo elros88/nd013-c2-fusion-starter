@@ -38,6 +38,8 @@ def show_pcl(pcl):
     #######
     print("student task ID_S1_EX2")
 
+    print(pcl)
+    print('POINT CLOUD')
     # step 1 : initialize open3d with key callback and create window
     
     # step 2 : create instance of open3d point-cloud class
