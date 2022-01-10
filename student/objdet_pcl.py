@@ -13,6 +13,7 @@
 # general package imports
 import cv2
 import numpy as np
+import open3d.cpu.pybind.utility
 import torch
 
 # add project directory to python path to enable relative imports
@@ -31,6 +32,8 @@ from tools.waymo_reader.simple_waymo_open_dataset_reader import dataset_pb2, lab
 import misc.objdet_tools as tools
 
 
+PCL_COUNTER = 0
+
 # visualize lidar point-cloud
 def show_pcl(pcl):
 
@@ -38,17 +41,32 @@ def show_pcl(pcl):
     #######
     print("student task ID_S1_EX2")
 
-    print(pcl)
-    print('POINT CLOUD')
     # step 1 : initialize open3d with key callback and create window
-    
+    open3d_window = open3d.visualization.VisualizerWithKeyCallback()
+    open3d_window.create_window('Point Cloud')
+
     # step 2 : create instance of open3d point-cloud class
+    point_cloud = open3d.geometry.PointCloud()
 
     # step 3 : set points in pcd instance by converting the point-cloud into 3d vectors (using open3d function Vector3dVector)
+    point_cloud.points = open3d.utility.Vector3dVector(pcl[:, :3])
 
     # step 4 : for the first frame, add the pcd instance to visualization using add_geometry; for all other frames, use update_geometry instead
-    
+    if PCL_COUNTER == 0:
+        open3d_window.add_geometry(point_cloud)
+        PCL_COUNTER == 1
+    else:
+        open3d_window.update_geometry(point_cloud)
+
     # step 5 : visualize point cloud and keep window open until right-arrow is pressed (key-code 262)
+
+    def show_next_cloud(self):
+        open3d_window.close()
+        return False
+
+    open3d_window.register_key_callback(262, show_next_cloud)
+
+    open3d_window.run()
 
     #######
     ####### ID_S1_EX2 END #######     
