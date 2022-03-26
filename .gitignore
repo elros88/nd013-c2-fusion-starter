@@ -20,3 +20,4 @@ tools/waymo_reader/dist/simple_waymo_open_dataset_reader-0.0.0-py3.7.egg
 tools/objdet_models/darknet/pretrained/
 tools/objdet_models/resnet/pretrained/
 
+results/
