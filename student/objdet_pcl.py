@@ -80,7 +80,7 @@ def show_range_image(frame, lidar_name):
     #######
     print("student task ID_S1_EX1")
 
-    # step 1 : extract lidar data and range image for the roof-mounted lidar
+    # step 1 : extract lidar data and range image for thethe roof-mounted lidar
     top_lidar = [obj for obj in frame.lasers if obj.name == lidar_name][0]
 
     # step 2 : extract the range and the intensity channel from the range image
@@ -176,11 +176,11 @@ def bev_from_pcl(lidar_pcl, configs):
 
     intensity_image = intensity_map * 256
     intensity_image = intensity_image.astype(np.uint8)
-    while (1):
-        cv2.imshow('Intensity Map', intensity_image)
-        if cv2.waitKey(10) & 0xFF == 27:
-            break
-    cv2.destroyAllWindows()
+    # while (1):
+    #     cv2.imshow('Intensity Map', intensity_image)
+    #     if cv2.waitKey(10) & 0xFF == 27:
+    #         break
+    # cv2.destroyAllWindows()
 
 
     #######
@@ -204,11 +204,11 @@ def bev_from_pcl(lidar_pcl, configs):
 
     ## step 3 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
 
-    while (1):
-        cv2.imshow('Height MAp', height_map)
-        if cv2.waitKey(10) & 0xFF == 27:
-            break
-    cv2.destroyAllWindows()
+    # while (1):
+    #     cv2.imshow('Height MAp', height_map)
+    #     if cv2.waitKey(10) & 0xFF == 27:
+    #         break
+    # cv2.destroyAllWindows()
 
     #######
     ####### ID_S2_EX3 END #######       
@@ -219,25 +219,26 @@ def bev_from_pcl(lidar_pcl, configs):
     # height_map = []
     # intensity_map = []
     #
-    # # Compute density layer of the BEV map
-    # density_map = np.zeros((configs.bev_height + 1, configs.bev_width + 1))
-    # _, _, counts = np.unique(lidar_pcl_cpy[:, 0:2], axis=0, return_index=True, return_counts=True)
-    # normalizedCounts = np.minimum(1.0, np.log(counts + 1) / np.log(64))
-    # density_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = normalizedCounts
-    #
-    # # assemble 3-channel bev-map from individual maps
-    # bev_map = np.zeros((3, configs.bev_height, configs.bev_width))
-    # bev_map[2, :, :] = density_map[:configs.bev_height, :configs.bev_width]  # r_map
-    # bev_map[1, :, :] = height_map[:configs.bev_height, :configs.bev_width]  # g_map
-    # bev_map[0, :, :] = intensity_map[:configs.bev_height, :configs.bev_width]  # b_map
-    #
-    # # expand dimension of bev_map before converting into a tensor
-    # s1, s2, s3 = bev_map.shape
-    # bev_maps = np.zeros((1, s1, s2, s3))
-    # bev_maps[0] = bev_map
-    #
-    # bev_maps = torch.from_numpy(bev_maps)  # create tensor from birds-eye view
-    # input_bev_maps = bev_maps.to(configs.device, non_blocking=True).float()
-    # return input_bev_maps
+    # Compute density layer of the BEV map
+    density_map = np.zeros((configs.bev_height + 1, configs.bev_width + 1))
+    _, _, counts = np.unique(copied_pcl[:, 0:2], axis=0, return_index=True, return_counts=True)
+    normalizedCounts = np.minimum(1.0, np.log(counts + 1) / np.log(64))
+    density_map[np.int_(reordered_pcl[:, 0]), np.int_(reordered_pcl[:, 1])] = normalizedCounts
+
+    # assemble 3-channel bev-map from individual maps
+    bev_map = np.zeros((3, configs.bev_height, configs.bev_width))
+    bev_map[2, :, :] = density_map[:configs.bev_height, :configs.bev_width]  # r_map
+    bev_map[1, :, :] = height_map[:configs.bev_height, :configs.bev_width]  # g_map
+    bev_map[0, :, :] = intensity_map[:configs.bev_height, :configs.bev_width]  # b_map
+
+    # expand dimension of bev_map before converting into a tensor
+    s1, s2, s3 = bev_map.shape
+    bev_maps = np.zeros((1, s1, s2, s3))
+    bev_maps[0] = bev_map
+
+    bev_maps = torch.from_numpy(bev_maps)  # create tensor from birds-eye view
+    input_bev_maps = bev_maps.to(configs.device, non_blocking=True).float()
+
+    return input_bev_maps
 
 

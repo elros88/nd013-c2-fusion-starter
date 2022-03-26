@@ -35,7 +35,7 @@ import misc.objdet_tools as tools
 def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5):
     
      # find best detection for each valid label 
-    true_positives = 0 # no. of correctly detected objects
+    true_positives = 0  # no. of correctly detected objects
     center_devs = []
     ious = []
     for label, valid in zip(labels, labels_valid):
@@ -49,23 +49,37 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             print("student task ID_S4_EX1 ")
 
             ## step 1 : extract the four corners of the current label bounding-box
+            label_box = \
+                tools.compute_box_corners(label.box.center_x, label.box.center_y, label.box.width, label.box.length,
+                                          label.box.heading)
             
             ## step 2 : loop over all detected objects
-
+            for detection in detections:
                 ## step 3 : extract the four corners of the current detection
+                detection_box = \
+                    tools.compute_box_corners(detection[1], detection[2], detection[7], detection[6], detection[7])
                 
-                ## step 4 : computer the center distance between label and detection bounding-box in x, y, and z
+                ## step 4 : compute the center distance between label and detection bounding-box in x, y, and z
+                dist_x = label.box.center_x - detection[1]
+                dist_y = label.box.center_y - detection[2]
+                dist_z = label.box.center_z - detection[3]
                 
                 ## step 5 : compute the intersection over union (IOU) between label and detection bounding-box
-                
+                label_polygon = Polygon(label_box)
+                detection_polygon = Polygon(detection_box)
+                iou = label_polygon.intersection(detection_polygon).area / label_polygon.union(detection_polygon).area
+
                 ## step 6 : if IOU exceeds min_iou threshold, store [iou,dist_x, dist_y, dist_z] in matches_lab_det and increase the TP count
+                if iou > min_iou:
+                    matches_lab_det.append([iou, dist_x, dist_y, dist_z])
+                    true_positives += 1
                 
             #######
             ####### ID_S4_EX1 END #######     
             
         # find best match and compute metrics
         if matches_lab_det:
-            best_match = max(matches_lab_det,key=itemgetter(1)) # retrieve entry with max iou in case of multiple candidates   
+            best_match = max(matches_lab_det, key=itemgetter(1)) # retrieve entry with max iou in case of multiple candidates
             ious.append(best_match[0])
             center_devs.append(best_match[1:])
 
@@ -77,13 +91,13 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
     # compute positives and negatives for precision/recall
     
     ## step 1 : compute the total number of positives present in the scene
-    all_positives = 0
+    all_positives = len(labels_valid)
 
     ## step 2 : compute the number of false negatives
-    false_negatives = 0
+    false_negatives = all_positives - true_positives
 
     ## step 3 : compute the number of false positives
-    false_positives = 0
+    false_positives = len(detections) - true_positives
     
     #######
     ####### ID_S4_EX2 END #######     
