@@ -35,12 +35,11 @@ import misc.objdet_tools as tools
 PCL_COUNTER = 0
 
 # visualize lidar point-cloud
-def show_pcl(pcl):
+def show_pcl(pcl, frame_count):
 
     ####### ID_S1_EX2 START #######     
     #######
     print("student task ID_S1_EX2")
-
     # step 1 : initialize open3d with key callback and create window
     open3d_window = open3d.visualization.VisualizerWithKeyCallback()
     open3d_window.create_window('Point Cloud')
@@ -63,6 +62,7 @@ def show_pcl(pcl):
     # step 5 : visualize point cloud and keep window open until right-arrow is pressed (key-code 262)
 
     def show_next_cloud(self):
+        # open3d_window.capture_screen_image(os.getcwd() + '/writeup-img/pcl_' + str(frame_count) + '.png')
         open3d_window.close()
         return False
 
@@ -117,7 +117,7 @@ def show_range_image(frame, lidar_name):
 
 
 # create birds-eye view of lidar data
-def bev_from_pcl(lidar_pcl, configs):
+def bev_from_pcl(lidar_pcl, configs, frame_count):
 
     # remove lidar points outside detection area and with too low reflectivity
     mask = np.where((lidar_pcl[:, 0] >= configs.lim_x[0]) & (lidar_pcl[:, 0] <= configs.lim_x[1]) &
@@ -147,7 +147,7 @@ def bev_from_pcl(lidar_pcl, configs):
 
     # step 4 : visualize point-cloud using the function show_pcl from a previous task
 
-    show_pcl(copied_pcl)
+    show_pcl(copied_pcl, frame_count)
     #######
     ####### ID_S2_EX1 END #######     
     
@@ -175,12 +175,13 @@ def bev_from_pcl(lidar_pcl, configs):
     ## step 5 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
 
     intensity_image = intensity_map * 256
-    intensity_image = intensity_image.astype(np.uint8)
+    # intensity_image = intensity_image.astype(np.uint8)
     # while (1):
     #     cv2.imshow('Intensity Map', intensity_image)
+    #     cv2.imwrite(os.getcwd() + '/writeup-img/intensity_image_' + str(frame_count) + '.png', intensity_image)
     #     if cv2.waitKey(10) & 0xFF == 27:
     #         break
-    # cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 
     #######
