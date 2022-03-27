@@ -79,9 +79,9 @@ camera = None # init camera sensor object
 np.random.seed(10) # make random values predictable
 
 ## Selective execution and visualization
-exec_detection = ['bev_from_pcl', 'detect_objects']  #options are 'bev_from_pcl', 'detect_objects', 'validate_object_labels', 'measure_detection_performance'; options not in the list will be loaded from file
+exec_detection = ['bev_from_pcl', 'detect_objects', 'validate_object_labels', 'measure_detection_performance']  #options are 'bev_from_pcl', 'detect_objects', 'validate_object_labels', 'measure_detection_performance'; options not in the list will be loaded from file
 exec_tracking = []  # options are 'perform_tracking'
-exec_visualization = ['show_objects_in_bev_labels_in_camera']  #options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
+exec_visualization = ['show_detection_performance']  #options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
 exec_list = make_exec_list(exec_detection, exec_tracking, exec_visualization)
 vis_pause_time = 0  #set pause time between frames in ms (0 = stop between frames until key is pressed)
 
@@ -135,7 +135,7 @@ while True:
             lidar_bev = pcl.bev_from_pcl(lidar_pcl, configs_det, cnt_frame)
         else:
             print('loading birds-eve view from result file')
-            # lidar_bev = load_object_from_file(results_fullpath, data_filename, 'lidar_bev', cnt_frame)
+            lidar_bev = load_object_from_file(results_fullpath, data_filename, 'lidar_bev', cnt_frame)
 
         ## 3D object detection
         if (configs_det.use_labels_as_objects==True):
@@ -150,8 +150,8 @@ while True:
                 # load different data for final project vs. mid-term project
                 if 'perform_tracking' in exec_list:
                     detections = load_object_from_file(results_fullpath, data_filename, 'detections', cnt_frame)
-                # else:
-                #     detections = load_object_from_file(results_fullpath, data_filename, 'detections_' + configs_det.arch + '_' + str(configs_det.conf_thresh), cnt_frame)
+                else:
+                    detections = load_object_from_file(results_fullpath, data_filename, 'detections_' + configs_det.arch + '_' + str(configs_det.conf_thresh), cnt_frame)
 
         ## Validate object labels
         if 'validate_object_labels' in exec_list:
@@ -170,11 +170,11 @@ while True:
             # load different data for final project vs. mid-term project
             if 'perform_tracking' in exec_list:
                 det_performance = load_object_from_file(results_fullpath, data_filename, 'det_performance', cnt_frame)
-        #     else:
-        #         det_performance = load_object_from_file(results_fullpath, data_filename, 'det_performance_' + configs_det.arch + '_' + str(configs_det.conf_thresh), cnt_frame)
-        #
-        # det_performance_all.append(det_performance) # store all evaluation results in a list for performance assessment at the end
-        #
+            else:
+                det_performance = load_object_from_file(results_fullpath, data_filename, 'det_performance_' + configs_det.arch + '_' + str(configs_det.conf_thresh), cnt_frame)
+
+        det_performance_all.append(det_performance) # store all evaluation results in a list for performance assessment at the end
+
 
         ## Visualization for object detection
         if 'show_range_image' in exec_list:
@@ -277,7 +277,7 @@ while True:
 
 ## Evaluate object detection performance
 if 'show_detection_performance' in exec_list:
-    eval.compute_performance_stats(det_performance_all, configs_det)
+    eval.compute_performance_stats(det_performance_all)
 
 ## Plot RMSE for all tracks
 if 'show_tracks' in exec_list:

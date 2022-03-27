@@ -222,19 +222,23 @@ def detect_objects(input_bev_maps, model, configs):
         ## step 2 : loop over all detections
         for detection in detections:
             ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
-            print("DETECTION")
-            print(detection)
             score = detection[0]
-            x = detection[2]/configs.bev_height * configs.lim_x[1] + configs.lim_x[0]
-            y = detection[1]/configs.bev_width * configs.lim_y[1] + configs.lim_y[0]
+            x = detection[2] / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
+            y = detection[1] / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) - (
+                    configs.lim_y[1] - configs.lim_y[0]) / 2.0
             z = detection[3] + configs.lim_z[0]
             h = detection[4]
-            w = detection[5] / configs.bev_width * configs.lim_y[1]
-            l = detection[6] / configs.bev_height * configs.lim_x[1]
+            w = detection[5] / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0])
+            l = detection[6] / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
             yaw = -detection[7]
 
+            if ((x >= configs.lim_x[0]) and (x <= configs.lim_x[1])
+                    and (y >= configs.lim_y[0]) and (y <= configs.lim_y[1])
+                    and (z >= configs.lim_z[0]) and (z <= configs.lim_z[1])):
+
             ## step 4 : append the current object to the 'objects' array
-            objects.append([1, x, y, z, h, w, l, yaw])
+                objects.append([1, x, y, z, h, w, l, yaw])
+
     #######
     ####### ID_S3_EX2 START #######   
     
