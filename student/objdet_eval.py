@@ -57,7 +57,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             for detection in detections:
                 ## step 3 : extract the four corners of the current detection
                 detection_box = \
-                    tools.compute_box_corners(detection[1], detection[2], detection[7], detection[6], detection[7])
+                    tools.compute_box_corners(detection[1], detection[2], detection[5], detection[6], detection[7])
                 
                 ## step 4 : compute the center distance between label and detection bounding-box in x, y, and z
                 dist_x = label.box.center_x - detection[1]
@@ -67,12 +67,14 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
                 ## step 5 : compute the intersection over union (IOU) between label and detection bounding-box
                 label_polygon = Polygon(label_box)
                 detection_polygon = Polygon(detection_box)
-                iou = label_polygon.intersection(detection_polygon).area / label_polygon.union(detection_polygon).area
+                intersection = label_polygon.intersection(detection_polygon).area
+                union = label_polygon.union(detection_polygon).area
+                iou = intersection / union
 
                 ## step 6 : if IOU exceeds min_iou threshold, store [iou,dist_x, dist_y, dist_z] in matches_lab_det and increase the TP count
                 if iou > min_iou:
                     matches_lab_det.append([iou, dist_x, dist_y, dist_z])
-                    true_positives += 1
+                    true_positives = true_positives + 1
                 
             #######
             ####### ID_S4_EX1 END #######     
@@ -125,12 +127,17 @@ def compute_performance_stats(det_performance_all):
     print('student task ID_S4_EX3')
 
     ## step 1 : extract the total number of positives, true positives, false negatives and false positives
-    
+    total_pos_negs = sum(np.array(pos_negs))
+    positives = total_pos_negs[0]
+    true_positives = total_pos_negs[1]
+    false_negatives = total_pos_negs[2]
+    false_positives = total_pos_negs[3]
+
     ## step 2 : compute precision
-    precision = 0.0
+    precision = true_positives / (true_positives + false_positives)
 
     ## step 3 : compute recall 
-    recall = 0.0
+    recall = true_positives / (true_positives + false_negatives)
 
     #######    
     ####### ID_S4_EX3 END #######     
