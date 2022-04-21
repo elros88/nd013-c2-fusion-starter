@@ -83,8 +83,8 @@ class Filter:
         p = track.P
         H = meas.sensor.get_H(x)
         gamma = self.gamma(track, meas)
-        S = self.S(track=track, meas=meas, H=H)
-        K = p * H.transpose() + np.linalg.inv(S)
+        S = self.S(track, meas, H)
+        K = p * H.transpose() * np.linalg.inv(S)
         x = x + K * gamma
         I = np.identity(params.dim_state)
         p = (I - K * H) * p
@@ -100,7 +100,7 @@ class Filter:
         # TODO Step 1: calculate and return residual gamma
         ############
 
-        return meas.z - meas.sensor.get_hx()
+        return meas.z - meas.sensor.get_hx(track.x)
         
         ############
         # END student code
