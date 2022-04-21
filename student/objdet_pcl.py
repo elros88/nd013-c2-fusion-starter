@@ -205,11 +205,12 @@ def bev_from_pcl(lidar_pcl, configs, frame_count):
 
     ## step 3 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
 
-    # while (1):
-    #     cv2.imshow('Height MAp', height_map)
-    #     if cv2.waitKey(10) & 0xFF == 27:
-    #         break
-    # cv2.destroyAllWindows()
+    while (1):
+        cv2.imshow('Height Map', height_map)
+        cv2.imwrite(os.getcwd() + '/mid-writeup/intensity_image_postprocessed_' + str(frame_count) + '.png', height_map)
+        if cv2.waitKey(10) & 0xFF == 27:
+            break
+    cv2.destroyAllWindows()
 
     #######
     ####### ID_S2_EX3 END #######       
