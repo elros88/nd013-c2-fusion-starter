@@ -43,9 +43,9 @@ class Track:
         self.x[0:3] = vehicle_position[0:3]
 
         p_pos = M_rot*meas.R*M_rot.transpose()
-        p_vel = np.matrix([[params.sigma_p44, 0, 0],
-                          [0, params.sigma_p55, 0],
-                          [0, 0, params.sigma_p66]])
+        p_vel = np.matrix([[params.sigma_p44**2, 0, 0],
+                          [0, params.sigma_p55**2, 0],
+                          [0, 0, params.sigma_p66**2]])
 
         self.P = np.zeros((6,6))
         self.P[0:3, 0:3] = p_pos
@@ -111,18 +111,13 @@ class Trackmanagement:
             if meas_list: # if not empty
                 if meas_list[0].sensor.in_fov(track.x):
                     # your code goes here
-                    track.state == 'tentative'
-
-                    if track.score > params.delete_threshold + 1:
-                        track.score = params.delete_threshold + 1
-                    track.score -= 1. / params.window
+                    track.score -= 1.0/params.window
 
         # delete old tracks
 
-        for i in self.track_list:
-            if i.score <= params.delete_threshold:
-                if i.P[0, 0] >= params.max_P or i.P[1, 1] > params.max_P:
-                    self.delete_track(track)
+        for track in self.track_list:
+            if (track.state == 'confirmed' and track.score < params.delete_threshold) or (track.P[0, 0] > params.max_P) or (track.P[1, 1] > params.max_P):
+                self.delete_track(track)
 
         ############
         # END student code
@@ -152,14 +147,8 @@ class Trackmanagement:
         # - increase track score
         # - set track state to 'tentative' or 'confirmed'
         ############
-
-        if track.score > params.delete_threshold:
-            track.state = 'tentative'
-
-        if track.score >= params.confirmed_threshold:
-            track.state = 'confirmed'
-
-        track.score += 1 / params.window
+        track.score += 1.0/params.window
+        track.state = 'confirmed' if track.score > params.confirmed_threshold else 'tentative'
         ############
         # END student code
         ############ 
