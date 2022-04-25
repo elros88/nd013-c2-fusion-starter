@@ -147,7 +147,7 @@ def bev_from_pcl(lidar_pcl, configs, frame_count):
 
     # step 4 : visualize point-cloud using the function show_pcl from a previous task
 
-    # show_pcl(copied_pcl, frame_count)
+    show_pcl(copied_pcl, frame_count)
     #######
     ####### ID_S2_EX1 END #######     
     
@@ -176,12 +176,12 @@ def bev_from_pcl(lidar_pcl, configs, frame_count):
 
     intensity_image = intensity_map * 256
     intensity_image = intensity_image.astype(np.uint8)
-    # while (1):
-    #     cv2.imshow('Intensity Map', intensity_image)
-    #     cv2.imwrite(os.getcwd() + '/writeup-img/intensity_image_' + str(frame_count) + '.png', intensity_image)
-    #     if cv2.waitKey(10) & 0xFF == 27:
-    #         break
-    # cv2.destroyAllWindows()
+    while (1):
+        cv2.imshow('Intensity Map', intensity_image)
+        # cv2.imwrite(os.getcwd() + '/writeup-img/intensity_image_' + str(frame_count) + '.png', intensity_image)
+        if cv2.waitKey(10) & 0xFF == 27:
+            break
+    cv2.destroyAllWindows()
 
 
     #######
@@ -207,7 +207,7 @@ def bev_from_pcl(lidar_pcl, configs, frame_count):
 
     while (1):
         cv2.imshow('Height Map', height_map)
-        cv2.imwrite(os.getcwd() + '/mid-writeup/intensity_image_postprocessed_' + str(frame_count) + '.png', height_map)
+        # cv2.imwrite(os.getcwd() + '/mid-writeup/intensity_image_postprocessed_' + str(frame_count) + '.png', height_map)
         if cv2.waitKey(10) & 0xFF == 27:
             break
     cv2.destroyAllWindows()
