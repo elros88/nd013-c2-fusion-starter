@@ -65,12 +65,8 @@ class Filter:
         ############
         # TODO Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
         ############
-
-        x = self.F() * track.x
-        p = self.F() * track.P * self.F().transpose() + self.Q()
-        track.set_x(x)
-        track.set_P(p)
-        
+        track.set_x(self.F() * track.x)
+        track.set_P(self.F() * track.P * self.F().transpose() + self.Q())
         ############
         # END student code
         ############ 
@@ -79,17 +75,14 @@ class Filter:
         ############
         # TODO Step 1: update state x and covariance P with associated measurement, save x and P in track
         ############
-        x = track.x
-        p = track.P
-        H = meas.sensor.get_H(x)
+        H = meas.sensor.get_H(track.x)
         gamma = self.gamma(track, meas)
-        S = self.S(track=track, meas=meas, H=H)
-        K = p * H.transpose() + np.linalg.inv(S)
-        x = x + K * gamma
+        S = self.S(track, meas, H)
+        K = track.P * H.transpose() * np.linalg.inv(S)
         I = np.identity(params.dim_state)
-        p = (I - K * H) * p
-        track.set_x(x)
-        track.set_P(p)
+
+        track.set_x(track.x + K * gamma)
+        track.set_P((I - K * H) * track.P)
         ############
         # END student code
         ############ 
@@ -100,7 +93,7 @@ class Filter:
         # TODO Step 1: calculate and return residual gamma
         ############
 
-        return meas.z - meas.sensor.get_hx()
+        return meas.z - meas.sensor.get_hx(track.x)
         
         ############
         # END student code

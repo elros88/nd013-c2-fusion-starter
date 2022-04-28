@@ -21,7 +21,8 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-import misc.params as params 
+import misc.params as params
+from scipy.stats.distributions import chi2
 
 class Association:
     '''Data association class with single nearest neighbor association and gating based on Mahalanobis distance'''
@@ -39,15 +40,31 @@ class Association:
         ############
         
         # the following only works for at most one track and one measurement
-        self.association_matrix = np.matrix([]) # reset matrix
+
+        N = len(track_list)
+        M = len(meas_list)
+        self.association_matrix = np.inf * np.ones((N, M))  # reset matrix
         self.unassigned_tracks = [] # reset lists
         self.unassigned_meas = []
-        
+
+        for i in range(N):
+            track = track_list[i]
+            for j in range(M):
+                meas = meas_list[j]
+                distance = self.MHD(track, meas, KF)
+                self.unassigned_meas.append(j)
+                self.unassigned_tracks.append(i)
+
+                if self.gating(distance, meas.sensor):
+                    self.association_matrix[i, j] = distance
+                else:
+                    self.association_matrix[i, j] = np.inf
+
         if len(meas_list) > 0:
             self.unassigned_meas = [0]
         if len(track_list) > 0:
             self.unassigned_tracks = [0]
-        if len(meas_list) > 0 and len(track_list) > 0: 
+        if len(meas_list) > 0 and len(track_list) > 0:
             self.association_matrix = np.matrix([[0]])
         
         ############
@@ -64,11 +81,25 @@ class Association:
         ############
 
         # the following only works for at most one track and one measurement
-        update_track = 0
-        update_meas = 0
-        
+
+        A = self.association_matrix
+
+        if np.min(A) == np.inf:
+            return np.nan, np.nan
+
+        ij_min = np.unravel_index(np.argmin(A, axis=None), A.shape)
+
+        ind_track = ij_min[0]
+        ind_meas = ij_min[1]
+
+        A = np.delete(A, ind_track, 0)
+        A = np.delete(A, ind_meas, 1)
+        self.association_matrix = A
+        update_track = self.unassigned_tracks[ind_track]
+        update_meas = self.unassigned_meas[ind_meas]
+
         # remove from list
-        self.unassigned_tracks.remove(update_track) 
+        self.unassigned_tracks.remove(update_track)
         self.unassigned_meas.remove(update_meas)
         self.association_matrix = np.matrix([])
             
@@ -81,8 +112,10 @@ class Association:
         ############
         # TODO Step 3: return True if measurement lies inside gate, otherwise False
         ############
-        
-        pass    
+
+        if MHD < chi2.ppf(0.95, df=2):
+            return True
+        return False
         
         ############
         # END student code
@@ -92,8 +125,11 @@ class Association:
         ############
         # TODO Step 3: calculate and return Mahalanobis distance
         ############
-        
-        pass
+        H = meas.sensor.get_H(track.x)
+        gamma = KF.gamma(track=track, meas=meas)
+        S = KF.S(track, meas, H)
+        MHD = gamma.transpose() * np.linalg.inv(S) * gamma
+        return MHD
         
         ############
         # END student code

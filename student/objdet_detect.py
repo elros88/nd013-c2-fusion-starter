@@ -224,8 +224,8 @@ def detect_objects(input_bev_maps, model, configs):
             ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
             score = detection[0]
             x = detection[2] / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
-            y = detection[1] / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) - (
-                    configs.lim_y[1] - configs.lim_y[0]) / 2.0
+            y = detection[1] / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) - \
+                (configs.lim_y[1] - configs.lim_y[0]) / 2.0
             z = detection[3] + configs.lim_z[0]
             h = detection[4]
             w = detection[5] / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0])
@@ -238,7 +238,7 @@ def detect_objects(input_bev_maps, model, configs):
 
             ## step 4 : append the current object to the 'objects' array
                 objects.append([1, x, y, z, h, w, l, yaw])
-
+    print("student task ID_S3_EX2")
     #######
     ####### ID_S3_EX2 START #######   
     
