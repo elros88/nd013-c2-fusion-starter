@@ -42,7 +42,7 @@ class Track:
         sensor_position[0:3] = meas.z[0:3]
         vehicle_position = meas.sensor.sens_to_veh * sensor_position
 
-        self.x = np.zeros((6, 1))
+        self.x = np.zeros((params.dim_state, 1))
         self.x[0:3] = vehicle_position[0:3]
 
         p_pos = M_rot * meas.R * M_rot.transpose()

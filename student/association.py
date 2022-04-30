@@ -33,7 +33,7 @@ class Association:
         
     def associate(self, track_list, meas_list, KF):
              
-        ############
+        #END student code###########
         # TODO Step 3: association:
         # - replace association_matrix with the actual association matrix based on Mahalanobis distance (see below) for all tracks and all measurements
         # - update list of unassigned measurements and unassigned tracks
@@ -43,30 +43,16 @@ class Association:
 
         N = len(track_list)
         M = len(meas_list)
-        self.association_matrix = np.inf * np.ones((N, M))  # reset matrix
-        self.unassigned_tracks = [] # reset lists
-        self.unassigned_meas = []
+        self.association_matrix = np.asmatrix(np.inf * np.ones((N, M)))  # reset matrix
+        self.unassigned_tracks = list(range(N)) if N > 0 else [] # reset lists
+        self.unassigned_meas = list(range(M)) if M > 0 else []
 
         for i in range(N):
             track = track_list[i]
             for j in range(M):
-                meas = meas_list[j]
-                distance = self.MHD(track, meas, KF)
-                self.unassigned_meas.append(j)
-                self.unassigned_tracks.append(i)
+                distance = self.MHD(track, meas_list[j], KF)
+                self.association_matrix[i, j] = distance if self.gating(distance, meas_list[j].sensor) else self.association_matrix[i, j]
 
-                if self.gating(distance, meas.sensor):
-                    self.association_matrix[i, j] = distance
-                else:
-                    self.association_matrix[i, j] = np.inf
-
-        if len(meas_list) > 0:
-            self.unassigned_meas = [0]
-        if len(track_list) > 0:
-            self.unassigned_tracks = [0]
-        if len(meas_list) > 0 and len(track_list) > 0:
-            self.association_matrix = np.matrix([[0]])
-        
         ############
         # END student code
         ############ 
@@ -113,9 +99,7 @@ class Association:
         # TODO Step 3: return True if measurement lies inside gate, otherwise False
         ############
 
-        if MHD < chi2.ppf(0.95, df=2):
-            return True
-        return False
+        return True if MHD < chi2.ppf(params.gating_threshold, sensor.dim_meas) else False
         
         ############
         # END student code
@@ -126,9 +110,9 @@ class Association:
         # TODO Step 3: calculate and return Mahalanobis distance
         ############
         H = meas.sensor.get_H(track.x)
-        gamma = KF.gamma(track=track, meas=meas)
+        gamma = KF.gamma(track, meas)
         S = KF.S(track, meas, H)
-        MHD = gamma.transpose() * np.linalg.inv(S) * gamma
+        MHD = gamma.T * np.linalg.inv(S) * gamma
         return MHD
         
         ############
