@@ -43,16 +43,25 @@ class Association:
 
         N = len(track_list)
         M = len(meas_list)
-        self.association_matrix = np.asmatrix(np.inf * np.ones((N, M)))  # reset matrix
-        self.unassigned_tracks = list(range(N)) if N > 0 else [] # reset lists
-        self.unassigned_meas = list(range(M)) if M > 0 else []
+
+        self.association_matrix = np.matrix([])  # reset matrix
+        self.unassigned_tracks = []  # reset lists
+        self.unassigned_meas = []
+
+        if N > 0:
+            self.unassigned_tracks = list(range(N))
+        if M > 0:
+            self.unassigned_meas = list(range(M)) if M > 0 else []
+        if N > 0 and M > 0:
+            self.association_matrix = np.asmatrix(np.inf * np.ones((N, M)))
 
         for i in range(N):
-            track = track_list[i]
             for j in range(M):
-                distance = self.MHD(track, meas_list[j], KF)
-                self.association_matrix[i, j] = distance if self.gating(distance, meas_list[j].sensor) else self.association_matrix[i, j]
+                distance = self.MHD(track_list[i], meas_list[j], KF)
+                if self.gating(distance, meas_list[j].sensor):
+                    self.association_matrix[i, j] = distance
 
+        print("Association Matrix {}".format(self.association_matrix))
         ############
         # END student code
         ############ 
@@ -87,8 +96,7 @@ class Association:
         # remove from list
         self.unassigned_tracks.remove(update_track)
         self.unassigned_meas.remove(update_meas)
-        self.association_matrix = np.matrix([])
-            
+
         ############
         # END student code
         ############ 
