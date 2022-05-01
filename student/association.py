@@ -61,7 +61,6 @@ class Association:
                 if self.gating(distance, meas_list[j].sensor):
                     self.association_matrix[i, j] = distance
 
-        print("Association Matrix {}".format(self.association_matrix))
         ############
         # END student code
         ############ 
